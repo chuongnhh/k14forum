@@ -89,10 +89,10 @@ textarea {
 }
 
 pagination-container {
-    padding:0px !important;
-    margin:0px !important;
+    padding: 0px !important;
+    margin: 0px !important;
 }
 
-.panel-footer {
-    padding: 5px 5px;
+.navbar-search {
+    padding-right: 0px !important;
 }

@@ -32,7 +32,7 @@
                     <li class="@(CurrentAction.currentAction == "Home" ? "active" : "")">@Html.ActionLink("Trang chủ", "Index", "Home")</li>
                     <li class="@(CurrentAction.currentAction == "Article" ? "active" : "")">@Html.ActionLink("Bài viết", "Index", "Article")</li>
                 </ul>
-                <ul class="nav navbar-form navbar-right hidden-xs">
+                <ul class="nav navbar-form navbar-right hidden-xs navbar-search">
                     <li>
                         @using (Html.BeginForm("SearchResult", "Home", FormMethod.Get, new { @id = "frmSearch", @role = "search" }))
                         {

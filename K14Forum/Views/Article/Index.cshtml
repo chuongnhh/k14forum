@@ -1,4 +1,6 @@
-﻿@model IEnumerable<K14Forum.Models.ApplicationArticle>
+﻿@model PagedList.IPagedList<K14Forum.Models.ApplicationArticle>
+@using PagedList.Mvc;
+
 @{
     ViewBag.Title = "Tất cả bài viết";
 }
@@ -28,6 +30,10 @@
                         </div>
                     </div>
                 }
+            </div>
+            <div class="text-center">
+                <hr style="margin:0px;padding-bottom:5px;" />
+                @Html.PagedListPager(Model, page => Url.Action("Index", new { page }))
             </div>
         </div>
     </div>

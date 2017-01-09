@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.Configuration;
 using System.Web.Mvc;
 
 namespace K14Forum.Controllers
@@ -19,7 +20,7 @@ namespace K14Forum.Controllers
             var model = db.ApplicationArticles
             .OrderByDescending(x => x.DateCreated);
 
-            int pageSize = 5;
+            int pageSize = int.Parse(WebConfigurationManager.AppSettings["pageSize"]);
             int pageNumber = (page ?? 1);
 
             return View(model.ToPagedList(pageNumber, pageSize));

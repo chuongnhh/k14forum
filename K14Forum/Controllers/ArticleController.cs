@@ -7,6 +7,8 @@ using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using System.Threading.Tasks;
 using K14Forum.CodeHelper;
+using PagedList;
+using System.Web.Configuration;
 
 namespace K14Forum.Controllers
 {
@@ -17,13 +19,16 @@ namespace K14Forum.Controllers
 
         [AllowAnonymous]
         // GET: Topic
-        public ActionResult Index()
+        public ActionResult Index(int? page)
         {
             CurrentAction.currentAction = "Article";
             var model = db.ApplicationArticles
-                .OrderByDescending(x => x.DateCreated)
-                .ToList();
-            return View(model);
+                .OrderByDescending(x => x.DateCreated);
+
+            int pageSize = int.Parse(WebConfigurationManager.AppSettings["pageSize"]);
+            int pageNumber = (page ?? 1);
+
+            return View(model.ToPagedList(pageNumber, pageSize));
         }
 
         [AllowAnonymous]
