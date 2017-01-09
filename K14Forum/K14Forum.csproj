@@ -468,6 +468,7 @@
     <Content Include="Views\Shared\_BackToTop.cshtml" />
     <Content Include="Views\Article\Tags.cshtml" />
     <Content Include="Views\Home\SearchResult.cshtml" />
+    <Content Include="Views\Shared\_LikeFacebook.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
