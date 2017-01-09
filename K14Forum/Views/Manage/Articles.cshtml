@@ -1,0 +1,71 @@
+﻿@model IEnumerable<K14Forum.Models.ApplicationArticle>
+@{
+    ViewBag.Title = "Bài viết của bạn";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles{
+    <link href="~/Plugins/footable-bootstrap/css/footable.bootstrap.min.css" rel="stylesheet" />
+}
+@section scripts{
+    <script src="~/Plugins/footable-bootstrap/js/footable.min.js"></script>
+    <script src="~/Scripts/bootbox.min.js"></script>
+    <script src="~/Scripts/Controllers/articleController.js"></script>
+    <script>
+        jQuery(function ($) {
+            $('.table').footable({
+                "columns": [{
+                    "type": "html"
+                }]
+            });
+        });
+    </script>
+}
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <strong>@ViewBag.Title</strong>
+            </div>
+            <div class="panel-body">
+                <table class="table" data-sorting="true" data-paging="true" data-filtering="true">
+                    <thead>
+                        <tr>
+                            <th>Tiêu đề bài viết</th>
+                            <th data-breakpoints="all" data-title="Mô tả ngắn">Mô tả ngắn</th>
+                            <th data-breakpoints="xs sm">Ngày khởi tạo</th>
+                            <th data-breakpoints="xs sm">Ngày cập nhật</th>
+                            <th data-breakpoints="xs sm md">Lượt xem</th>
+                            <th>Is locked</th>
+                            <th data-breakpoints="xs sm md" data-type="html">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr id="tr-article-@item.Id">
+                                <td>@item.Title</td>
+                                <td>@item.Description</td>
+                                <td>@item.DateCreated</td>
+                                <td>@item.DateEdited</td>
+                                <td>@item.Views</td>
+                                <td>@item.IsLocked</td>
+                                <td>
+                                    <a href="/Article/Details/@item.Id" class="btn btn-success btn-social btn-xs">
+                                        <span class="fa fa-adjust"></span>Xem
+                                    </a>
+                                    <a href="/Article/Edit/@item.Id" class="btn btn-primary btn-social btn-xs">
+                                        <span class="fa fa-edit"></span>Sửa
+                                    </a>
+                                    <a href="/Article/Delete/@item.Id" class="btn btn-danger btn-social btn-xs delete-article" data-id="@item.Id">
+                                        <span class="fa fa-remove"></span>Xóa
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -47,22 +47,22 @@ namespace K14Forum
 
             // Uncomment the following lines to enable logging in with third party login providers
             //app.UseMicrosoftAccountAuthentication(
-            //    clientId: "",
-            //    clientSecret: "");
+            //    clientId: "d42e1d78-d88a-405b-b788-3b12c46f3b4f",
+            //    clientSecret: "9UXLxtUykh5sngb3KBgUkbP");
 
             //app.UseTwitterAuthentication(
             //   consumerKey: "",
             //   consumerSecret: "");
 
-            //app.UseFacebookAuthentication(
-            //   appId: "",
-            //   appSecret: "");
+            app.UseFacebookAuthentication(
+               appId: "1023327751106200",
+               appSecret: "7beeba352a055791fee85de104c5baf9");
 
-            //app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
-            //{
-            //    ClientId = "",
-            //    ClientSecret = ""
-            //});
+            app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions()
+            {
+                ClientId = "180326250940-2o07ivgokngqau831n9ov5bt8p3cg7to.apps.googleusercontent.com",
+                ClientSecret = "uFM9Pe2sRWzoMoshuMbNmj2l"
+            });
         }
     }
 }

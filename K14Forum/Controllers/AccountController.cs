@@ -9,6 +9,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using K14Forum.Models;
+using K14Forum.CodeHelper;
 
 namespace K14Forum.Controllers
 {
@@ -22,7 +23,7 @@ namespace K14Forum.Controllers
         {
         }
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager )
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
         {
             UserManager = userManager;
             SignInManager = signInManager;
@@ -34,9 +35,9 @@ namespace K14Forum.Controllers
             {
                 return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
             }
-            private set 
-            { 
-                _signInManager = value; 
+            private set
+            {
+                _signInManager = value;
             }
         }
 
@@ -57,6 +58,7 @@ namespace K14Forum.Controllers
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)
         {
+            CurrentAction.currentAction = "Login";
             ViewBag.ReturnUrl = returnUrl;
             return View();
         }
@@ -68,6 +70,7 @@ namespace K14Forum.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
         {
+            CurrentAction.currentAction = "Login";
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -86,7 +89,7 @@ namespace K14Forum.Controllers
                     return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
                 case SignInStatus.Failure:
                 default:
-                    ModelState.AddModelError("", "Invalid login attempt.");
+                    ModelState.AddModelError("", "Nỗ lực đăng nhập không hợp lệ.");
                     return View(model);
             }
         }
@@ -96,6 +99,7 @@ namespace K14Forum.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> VerifyCode(string provider, string returnUrl, bool rememberMe)
         {
+            CurrentAction.currentAction = "VerifyCode";
             // Require that the user has already logged in via username/password or external login
             if (!await SignInManager.HasBeenVerifiedAsync())
             {
@@ -111,6 +115,7 @@ namespace K14Forum.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> VerifyCode(VerifyCodeViewModel model)
         {
+            CurrentAction.currentAction = "VerifyCode";
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -120,7 +125,7 @@ namespace K14Forum.Controllers
             // If a user enters incorrect codes for a specified amount of time then the user account 
             // will be locked out for a specified amount of time. 
             // You can configure the account lockout settings in IdentityConfig
-            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent:  model.RememberMe, rememberBrowser: model.RememberBrowser);
+            var result = await SignInManager.TwoFactorSignInAsync(model.Provider, model.Code, isPersistent: model.RememberMe, rememberBrowser: model.RememberBrowser);
             switch (result)
             {
                 case SignInStatus.Success:
@@ -129,7 +134,7 @@ namespace K14Forum.Controllers
                     return View("Lockout");
                 case SignInStatus.Failure:
                 default:
-                    ModelState.AddModelError("", "Invalid code.");
+                    ModelState.AddModelError("", "Mã không hợp lệ.");
                     return View(model);
             }
         }
@@ -139,6 +144,7 @@ namespace K14Forum.Controllers
         [AllowAnonymous]
         public ActionResult Register()
         {
+            CurrentAction.currentAction = "Register";
             return View();
         }
 
@@ -149,21 +155,30 @@ namespace K14Forum.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register(RegisterViewModel model)
         {
+            CurrentAction.currentAction = "Register";
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var user = new ApplicationUser
+                {
+                    UserName = model.Email,
+                    Email = model.Email,
+                    FullName = model.FullName,
+                    Image = "/Images/default.png",
+                    BirthDate = DateTime.Parse("1994/01/01")
+                };
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
+                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+
                     // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
-                    // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
-                    // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-                    // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
+                    string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
+                    var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+                    await UserManager.SendEmailAsync(user.Id, "Xác thực tài khoản của bạn", "Vui lòng nhấp vào <a href=\"" + callbackUrl + "\">đây</a> để thực hiện việc xác thực email của bạn.");
 
-                    return RedirectToAction("Index", "Home");
+                    ViewBag.Message = "Chúng tôi đã gửi một email để xác thực tài khoản của bạn. Bạn vui lòng kiểm tra email để hoàn thành quá trình đăng ký tài khoản.";
+                    //return RedirectToAction("Index", "Home");
                 }
                 AddErrors(result);
             }
@@ -177,6 +192,7 @@ namespace K14Forum.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> ConfirmEmail(string userId, string code)
         {
+            CurrentAction.currentAction = "ConfirmEmail";
             if (userId == null || code == null)
             {
                 return View("Error");
@@ -190,6 +206,7 @@ namespace K14Forum.Controllers
         [AllowAnonymous]
         public ActionResult ForgotPassword()
         {
+            CurrentAction.currentAction = "ForgotPassword";
             return View();
         }
 
@@ -200,6 +217,7 @@ namespace K14Forum.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
+            CurrentAction.currentAction = "ForgotPassword";
             if (ModelState.IsValid)
             {
                 var user = await UserManager.FindByNameAsync(model.Email);
@@ -211,10 +229,10 @@ namespace K14Forum.Controllers
 
                 // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
                 // Send an email with this link
-                // string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
-                // var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);		
-                // await UserManager.SendEmailAsync(user.Id, "Reset Password", "Please reset your password by clicking <a href=\"" + callbackUrl + "\">here</a>");
-                // return RedirectToAction("ForgotPasswordConfirmation", "Account");
+                string code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
+                var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+                await UserManager.SendEmailAsync(user.Id, "Đặt lại mật khẩu", "Vui lòng nhấp vào <a href=\"" + callbackUrl + "\">đây</a> để đặt lại mật khẩu của bạn.");
+                return RedirectToAction("ForgotPasswordConfirmation", "Account");
             }
 
             // If we got this far, something failed, redisplay form
@@ -226,6 +244,7 @@ namespace K14Forum.Controllers
         [AllowAnonymous]
         public ActionResult ForgotPasswordConfirmation()
         {
+            CurrentAction.currentAction = "ForgotPasswordConfirmation";
             return View();
         }
 
@@ -234,6 +253,7 @@ namespace K14Forum.Controllers
         [AllowAnonymous]
         public ActionResult ResetPassword(string code)
         {
+            CurrentAction.currentAction = "ResetPassword";
             return code == null ? View("Error") : View();
         }
 
@@ -244,6 +264,7 @@ namespace K14Forum.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ResetPassword(ResetPasswordViewModel model)
         {
+            CurrentAction.currentAction = "ResetPassword";
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -268,6 +289,7 @@ namespace K14Forum.Controllers
         [AllowAnonymous]
         public ActionResult ResetPasswordConfirmation()
         {
+            CurrentAction.currentAction = "ResetPasswordConfirmation";
             return View();
         }
 
@@ -278,6 +300,7 @@ namespace K14Forum.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult ExternalLogin(string provider, string returnUrl)
         {
+            CurrentAction.currentAction = "ExternalLogin";
             // Request a redirect to the external login provider
             return new ChallengeResult(provider, Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl }));
         }
@@ -287,6 +310,7 @@ namespace K14Forum.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> SendCode(string returnUrl, bool rememberMe)
         {
+            CurrentAction.currentAction = "SendCode";
             var userId = await SignInManager.GetVerifiedUserIdAsync();
             if (userId == null)
             {
@@ -304,6 +328,7 @@ namespace K14Forum.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> SendCode(SendCodeViewModel model)
         {
+            CurrentAction.currentAction = "SendCode";
             if (!ModelState.IsValid)
             {
                 return View();
@@ -322,12 +347,12 @@ namespace K14Forum.Controllers
         [AllowAnonymous]
         public async Task<ActionResult> ExternalLoginCallback(string returnUrl)
         {
+            CurrentAction.currentAction = "ExternalLoginCallback";
             var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync();
             if (loginInfo == null)
             {
                 return RedirectToAction("Login");
             }
-
             // Sign in the user with this external login provider if the user already has a login
             var result = await SignInManager.ExternalSignInAsync(loginInfo, isPersistent: false);
             switch (result)
@@ -343,7 +368,11 @@ namespace K14Forum.Controllers
                     // If the user does not have an account, then prompt the user to create an account
                     ViewBag.ReturnUrl = returnUrl;
                     ViewBag.LoginProvider = loginInfo.Login.LoginProvider;
-                    return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel { Email = loginInfo.Email });
+                    return View("ExternalLoginConfirmation", new ExternalLoginConfirmationViewModel
+                    {
+                        Email = loginInfo.Email,
+                        DefaultUserName = loginInfo.DefaultUserName
+                    });
             }
         }
 
@@ -354,6 +383,7 @@ namespace K14Forum.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl)
         {
+            CurrentAction.currentAction = "ExternalLoginConfirmation";
             if (User.Identity.IsAuthenticated)
             {
                 return RedirectToAction("Index", "Manage");
@@ -367,7 +397,7 @@ namespace K14Forum.Controllers
                 {
                     return View("ExternalLoginFailure");
                 }
-                var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
+                var user = new ApplicationUser { UserName = model.Email, Email = model.Email, FullName = model.DefaultUserName };
                 var result = await UserManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
@@ -387,10 +417,11 @@ namespace K14Forum.Controllers
 
         //
         // POST: /Account/LogOff
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
         public ActionResult LogOff()
         {
+            CurrentAction.currentAction = "LogOff";
             AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
             return RedirectToAction("Index", "Home");
         }
@@ -400,6 +431,7 @@ namespace K14Forum.Controllers
         [AllowAnonymous]
         public ActionResult ExternalLoginFailure()
         {
+            CurrentAction.currentAction = "ExternalLoginFailure";
             return View();
         }
 

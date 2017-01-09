@@ -1,0 +1,37 @@
+﻿@model IEnumerable<K14Forum.Models.ApplicationArticle>
+@{
+    ViewBag.Title = "Tất cả bài viết";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <strong>@ViewBag.Title</strong>
+            </div>
+            <div class="panel-body">
+                @foreach (var item in Model)
+                {
+                    <div class="media">
+                        <div class="media-body">
+                            <h3 class="media-heading"><a href="/Article/Details/@item.Id">@item.Title</a></h3>
+                            <small>
+                                Được tạo bởi <a href="javascript:(void)">@item.User.FullName</a>
+                                vào lúc @item.DateCreated
+                                <br />
+                                @foreach (var i in item.Tags)
+                                {
+                                    <a href="/Article/Tags/@i.Id" class="btn btn-default btn-tags btn-xs">@i.Tag</a>
+                                }
+                            </small>
+                            <p>@item.Description</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        @{ Html.RenderAction("_MenuPartail", "Home", null);}
+    </div>
+</div>

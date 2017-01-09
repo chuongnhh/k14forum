@@ -5,9 +5,13 @@ namespace K14Forum.Models
 {
     public class ExternalLoginConfirmationViewModel
     {
-        [Required]
-        [Display(Name = "Email")]
+        [Required(ErrorMessage ="Bạn chưa nhập địa chỉ email.")]
+        [Display(Name = "Địa chỉ email")]
+        [EmailAddress(ErrorMessage ="Địa chỉ email không hợp lệ.")]
         public string Email { get; set; }
+
+        [Display(Name = "Họ tên mặc định")]
+        public string DefaultUserName { get; set; }
     }
 
     public class ExternalLoginListViewModel
@@ -41,62 +45,67 @@ namespace K14Forum.Models
 
     public class ForgotViewModel
     {
-        [Required]
-        [Display(Name = "Email")]
+        [Required(ErrorMessage ="Bạn chưa nhập địa chỉ email.")]
+        [Display(Name = "Địa chỉ email (*)")]
+        [EmailAddress(ErrorMessage = "Địa chỉ email không hợp lệ.")]
         public string Email { get; set; }
     }
 
     public class LoginViewModel
     {
-        [Required]
-        [Display(Name = "Email")]
-        [EmailAddress]
+        [Required(ErrorMessage = "Bạn chưa nhập địa chỉ email.")]
+        [Display(Name = "Địa chỉ email (*)")]
+        [EmailAddress(ErrorMessage = "Địa chỉ email không hợp lệ.")]
         public string Email { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Bạn chưa nhập mật khẩu.")]
         [DataType(DataType.Password)]
-        [Display(Name = "Password")]
+        [Display(Name = "Mật khẩu (*)")]
         public string Password { get; set; }
 
-        [Display(Name = "Remember me?")]
+        [Display(Name = "Nhớ đăng nhập?")]
         public bool RememberMe { get; set; }
     }
 
     public class RegisterViewModel
     {
-        [Required]
-        [EmailAddress]
-        [Display(Name = "Email")]
+        [Required(ErrorMessage ="Bạn chưa nhập họ tên.")]
+        [Display(Name = "Họ tên (*)")]
+        public string FullName { get; set; }
+
+        [Required(ErrorMessage = "Bạn chưa nhập địa chỉ email.")]
+        [EmailAddress(ErrorMessage = ("Địa chỉ email không hợp lệ."))]
+        [Display(Name = "Địa chỉ email (*)")]
         public string Email { get; set; }
 
-        [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
+        [Required(ErrorMessage = "Bạn chưa nhập mật khẩu.")]
+        [StringLength(100, ErrorMessage = "{0} phải có ít nhất {2} ký tự.", MinimumLength = 6)]
         [DataType(DataType.Password)]
-        [Display(Name = "Password")]
+        [Display(Name = "Mật khẩu (*)")]
         public string Password { get; set; }
 
         [DataType(DataType.Password)]
-        [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        [Display(Name = "Xác nhận mật khẩu (*)")]
+        [Compare("Password", ErrorMessage = "Mật khẩu xác thực không khớp.")]
         public string ConfirmPassword { get; set; }
     }
 
     public class ResetPasswordViewModel
     {
-        [Required]
-        [EmailAddress]
-        [Display(Name = "Email")]
+        [Required(ErrorMessage = "Bạn chưa nhập địa chỉ email.")]
+        [EmailAddress(ErrorMessage = ("Địa chỉ email không hợp lệ."))]
+        [Display(Name = "Địa chỉ email (*)")]
         public string Email { get; set; }
 
-        [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
+        [Required(ErrorMessage = "Bạn chưa nhập mật khẩu.")]
+        [StringLength(100, ErrorMessage = "{0} phải có ít nhất {2} ký tự.", MinimumLength = 6)]
         [DataType(DataType.Password)]
-        [Display(Name = "Password")]
+        [Display(Name = "Mật khẩu (*)")]
         public string Password { get; set; }
 
         [DataType(DataType.Password)]
-        [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        [Display(Name = "Xác nhận mật khẩu (*)")]
+        [Compare("Password", ErrorMessage = "Mật khẩu xác thực không khớp.")]
         public string ConfirmPassword { get; set; }
 
         public string Code { get; set; }
@@ -104,9 +113,9 @@ namespace K14Forum.Models
 
     public class ForgotPasswordViewModel
     {
-        [Required]
-        [EmailAddress]
-        [Display(Name = "Email")]
+        [Required(ErrorMessage = "Bạn chưa nhập địa chỉ email.")]
+        [EmailAddress(ErrorMessage = ("Địa chỉ email không hợp lệ."))]
+        [Display(Name = "Địa chỉ email (*)")]
         public string Email { get; set; }
     }
 }

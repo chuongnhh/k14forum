@@ -1,0 +1,48 @@
+﻿
+@{
+    var comments = (IEnumerable<K14Forum.Models.ApplicationComment>)ViewBag.Comments;
+    var tags = (IEnumerable<K14Forum.Models.ApplicationTag>)ViewBag.Tags;
+    var Articles = (IEnumerable<K14Forum.Models.ApplicationArticle>)ViewBag.Articles;
+}
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <strong>Bình luận gần đây</strong>
+    </div>
+    <div class="panel-body">
+        @foreach (var item in comments)
+        {
+            <p>
+                <a href="/javascript:(void)">@item.User.FullName</a> đã bình luận trên <a href="/Article/Details/@item.ArticleId">@item.Article.Title</a>
+            </p>
+        }
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <strong>Bài viết gần đây</strong>
+    </div>
+    <div class="panel-body">
+        @foreach (var item in Articles)
+        {
+            <p>
+                <a href="/javascript:(void)">@item.User.FullName</a> đã tạo <a href="/Article/Details/@item.Id">@item.Title</a>
+                lúc @item.DateCreated
+            </p>
+        }
+    </div>
+</div>
+
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <strong>Thẻ được gắn gần đây</strong>
+    </div>
+    <div class="panel-body">
+        @foreach (var item in tags)
+        {
+            <a href="/Article/Tags/@item.Id" class="btn btn-default btn-xs btn-tags">@item.Tag (@item.TagsCount)</a>
+        }
+    </div>
+</div>

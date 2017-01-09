@@ -7,12 +7,29 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using K14Forum.Models;
+using K14Forum.CodeHelper;
 
 namespace K14Forum.Controllers
 {
     [Authorize]
     public class ManageController : Controller
     {
+        ApplicationDbContext db = new ApplicationDbContext();
+
+        // GET: User
+        public ActionResult Articles()
+        {
+            CurrentAction.currentAction = "Manage-Article";
+            var UserId = User.Identity.GetUserId();
+
+            var model = db.ApplicationArticles
+                .Where(x => x.UserId == UserId).
+                OrderByDescending(x => x.DateCreated)
+                .ToList();
+
+            return View(model);
+        }
+
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
 
@@ -32,9 +49,9 @@ namespace K14Forum.Controllers
             {
                 return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
             }
-            private set 
-            { 
-                _signInManager = value; 
+            private set
+            {
+                _signInManager = value;
             }
         }
 
@@ -50,30 +67,84 @@ namespace K14Forum.Controllers
             }
         }
 
-        //
-        // GET: /Manage/Index
         public async Task<ActionResult> Index(ManageMessageId? message)
         {
+            CurrentAction.currentAction = "Manage";
             ViewBag.StatusMessage =
-                message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
-                : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
-                : message == ManageMessageId.SetTwoFactorSuccess ? "Your two-factor authentication provider has been set."
-                : message == ManageMessageId.Error ? "An error has occurred."
-                : message == ManageMessageId.AddPhoneSuccess ? "Your phone number was added."
-                : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
+                message == ManageMessageId.ChangePasswordSuccess ? "Mật khẩu của bạn đã được thay đổi."
+                : message == ManageMessageId.SetPasswordSuccess ? "Mật khẩu của bạn đã được đặt."
+                : message == ManageMessageId.SetTwoFactorSuccess ? "Cung cấp dịch vụ xác thực hai yếu tố của bạn đã được thiết lập."
+                : message == ManageMessageId.Error ? "Một lỗi đã xảy ra."
+                : message == ManageMessageId.AddPhoneSuccess ? "Số điện thoại của bạn đã được bổ sung."
+                : message == ManageMessageId.RemovePhoneSuccess ? "Số điện thoại của bạn bị xóa."
                 : "";
 
-            var userId = User.Identity.GetUserId();
-            var model = new IndexViewModel
+            var UserId = User.Identity.GetUserId();
+            var user = db.Users.Find(UserId);
+            var model = new UpdateUserViewModel
             {
+                Id = user.Id,
+                UserName = user.UserName,
+                FullName = user.FullName,
+                Gender = user.Gender,
+                Email = user.Email,
+                BirthDate = user.BirthDate,
+                Image = user.Image,
                 HasPassword = HasPassword(),
-                PhoneNumber = await UserManager.GetPhoneNumberAsync(userId),
-                TwoFactor = await UserManager.GetTwoFactorEnabledAsync(userId),
-                Logins = await UserManager.GetLoginsAsync(userId),
-                BrowserRemembered = await AuthenticationManager.TwoFactorBrowserRememberedAsync(userId)
+                Logins = await UserManager.GetLoginsAsync(UserId)
             };
             return View(model);
         }
+
+        public async Task<JsonResult> Update(UpdateUserViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = db.Users.Find(model.Id);
+                if (user == null)
+                {
+                    return Json(new { status = false });
+                }
+
+                user.FullName = model.FullName;
+                user.Gender = model.Gender;
+                user.BirthDate = model.BirthDate;
+                //user.Image = model.Image;
+
+                await db.SaveChangesAsync();
+                return Json(new { status = true });
+            }
+            return Json(new { status = false });
+        }
+     
+        //
+        // GET: /Manage/Index
+        //public async Task<ActionResult> Index(ManageMessageId? message)
+        //{
+        //    CurrentAction.currentAction = "Manage";
+        //    var UserId = User.Identity.GetUserId();
+        //    ViewBag.Users = db.Users.Find(UserId);
+
+        //    ViewBag.StatusMessage =
+        //        message == ManageMessageId.ChangePasswordSuccess ? "Your password has been changed."
+        //        : message == ManageMessageId.SetPasswordSuccess ? "Your password has been set."
+        //        : message == ManageMessageId.SetTwoFactorSuccess ? "Your two-factor authentication provider has been set."
+        //        : message == ManageMessageId.Error ? "An error has occurred."
+        //        : message == ManageMessageId.AddPhoneSuccess ? "Your phone number was added."
+        //        : message == ManageMessageId.RemovePhoneSuccess ? "Your phone number was removed."
+        //        : "";
+
+        //    var userId = User.Identity.GetUserId();
+        //    var model = new IndexViewModel
+        //    {
+        //        HasPassword = HasPassword(),
+        //        PhoneNumber = await UserManager.GetPhoneNumberAsync(userId),
+        //        TwoFactor = await UserManager.GetTwoFactorEnabledAsync(userId),
+        //        Logins = await UserManager.GetLoginsAsync(userId),
+        //        BrowserRemembered = await AuthenticationManager.TwoFactorBrowserRememberedAsync(userId)
+        //    };
+        //    return View(model);
+        //}
 
         //
         // POST: /Manage/RemoveLogin
@@ -81,6 +152,7 @@ namespace K14Forum.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> RemoveLogin(string loginProvider, string providerKey)
         {
+            CurrentAction.currentAction = "Manage-Remove-Login";
             ManageMessageId? message;
             var result = await UserManager.RemoveLoginAsync(User.Identity.GetUserId(), new UserLoginInfo(loginProvider, providerKey));
             if (result.Succeeded)
@@ -103,6 +175,7 @@ namespace K14Forum.Controllers
         // GET: /Manage/AddPhoneNumber
         public ActionResult AddPhoneNumber()
         {
+            CurrentAction.currentAction = "Manage-Add-PhoneNumber";
             return View();
         }
 
@@ -112,6 +185,7 @@ namespace K14Forum.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> AddPhoneNumber(AddPhoneNumberViewModel model)
         {
+            CurrentAction.currentAction = "Manage-Add-PhoneNumber";
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -123,7 +197,7 @@ namespace K14Forum.Controllers
                 var message = new IdentityMessage
                 {
                     Destination = model.Number,
-                    Body = "Your security code is: " + code
+                    Body = "Mã bảo mật của bạn là: " + code
                 };
                 await UserManager.SmsService.SendAsync(message);
             }
@@ -136,6 +210,7 @@ namespace K14Forum.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> EnableTwoFactorAuthentication()
         {
+            CurrentAction.currentAction = "Manage-Enable-Two-Factor-Authentication";
             await UserManager.SetTwoFactorEnabledAsync(User.Identity.GetUserId(), true);
             var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
             if (user != null)
@@ -151,6 +226,7 @@ namespace K14Forum.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DisableTwoFactorAuthentication()
         {
+            CurrentAction.currentAction = "Manage-Enable-Two-Factor-Authentication";
             await UserManager.SetTwoFactorEnabledAsync(User.Identity.GetUserId(), false);
             var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
             if (user != null)
@@ -164,6 +240,7 @@ namespace K14Forum.Controllers
         // GET: /Manage/VerifyPhoneNumber
         public async Task<ActionResult> VerifyPhoneNumber(string phoneNumber)
         {
+            CurrentAction.currentAction = "Manage-Verify-PhoneNumber";
             var code = await UserManager.GenerateChangePhoneNumberTokenAsync(User.Identity.GetUserId(), phoneNumber);
             // Send an SMS through the SMS provider to verify the phone number
             return phoneNumber == null ? View("Error") : View(new VerifyPhoneNumberViewModel { PhoneNumber = phoneNumber });
@@ -175,6 +252,7 @@ namespace K14Forum.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> VerifyPhoneNumber(VerifyPhoneNumberViewModel model)
         {
+            CurrentAction.currentAction = "Manage-Verify-PhoneNumber";
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -200,6 +278,7 @@ namespace K14Forum.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> RemovePhoneNumber()
         {
+            CurrentAction.currentAction = "Manage-Remove-PhoneNumber";
             var result = await UserManager.SetPhoneNumberAsync(User.Identity.GetUserId(), null);
             if (!result.Succeeded)
             {
@@ -217,6 +296,7 @@ namespace K14Forum.Controllers
         // GET: /Manage/ChangePassword
         public ActionResult ChangePassword()
         {
+            CurrentAction.currentAction = "Manage-Change-Password";
             return View();
         }
 
@@ -226,6 +306,7 @@ namespace K14Forum.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ChangePassword(ChangePasswordViewModel model)
         {
+            CurrentAction.currentAction = "Manage-Change-Password";
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -248,6 +329,7 @@ namespace K14Forum.Controllers
         // GET: /Manage/SetPassword
         public ActionResult SetPassword()
         {
+            CurrentAction.currentAction = "Manage-Set-Password";
             return View();
         }
 
@@ -257,6 +339,7 @@ namespace K14Forum.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> SetPassword(SetPasswordViewModel model)
         {
+            CurrentAction.currentAction = "Manage-Set-Password";
             if (ModelState.IsValid)
             {
                 var result = await UserManager.AddPasswordAsync(User.Identity.GetUserId(), model.NewPassword);
@@ -280,9 +363,10 @@ namespace K14Forum.Controllers
         // GET: /Manage/ManageLogins
         public async Task<ActionResult> ManageLogins(ManageMessageId? message)
         {
+            CurrentAction.currentAction = "Manage-Logins";
             ViewBag.StatusMessage =
-                message == ManageMessageId.RemoveLoginSuccess ? "The external login was removed."
-                : message == ManageMessageId.Error ? "An error has occurred."
+                message == ManageMessageId.RemoveLoginSuccess ? "Việc đăng nhập bên ngoài đã được gỡ bỏ."
+                : message == ManageMessageId.Error ? "Một lỗi đã xảy ra."
                 : "";
             var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
             if (user == null)
@@ -305,6 +389,7 @@ namespace K14Forum.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult LinkLogin(string provider)
         {
+            CurrentAction.currentAction = "Manage-Link-Login";
             // Request a redirect to the external login provider to link a login for the current user
             return new AccountController.ChallengeResult(provider, Url.Action("LinkLoginCallback", "Manage"), User.Identity.GetUserId());
         }
@@ -313,6 +398,7 @@ namespace K14Forum.Controllers
         // GET: /Manage/LinkLoginCallback
         public async Task<ActionResult> LinkLoginCallback()
         {
+            CurrentAction.currentAction = "Manage-Link-Login-Callback";
             var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync(XsrfKey, User.Identity.GetUserId());
             if (loginInfo == null)
             {
@@ -333,7 +419,7 @@ namespace K14Forum.Controllers
             base.Dispose(disposing);
         }
 
-#region Helpers
+        #region Helpers
         // Used for XSRF protection when adding external logins
         private const string XsrfKey = "XsrfId";
 
@@ -384,6 +470,6 @@ namespace K14Forum.Controllers
             Error
         }
 
-#endregion
+        #endregion
     }
 }

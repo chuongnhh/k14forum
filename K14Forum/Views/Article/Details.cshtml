@@ -1,0 +1,76 @@
+﻿@model K14Forum.Models.ApplicationArticle
+@{
+    ViewBag.Title = Model.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section styles{
+    <link href="~/Plugins/summernote/summernote.css" rel="stylesheet" />
+}
+@section scripts{
+    <script src="~/Plugins/summernote/summernote.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#Comment').summernote({
+                height: 100,   //set editable area's height
+                codemirror: { // codemirror options
+                    theme: 'monokai'
+                }
+            });
+        });
+    </script>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="panel panel-default">
+            <div class="panel-body">
+
+                <div class="page-header">
+                    <h3>@Model.Title</h3>
+                    <small>
+                        Được tạo bởi <a href="/Manage/Info">@Model.User.FullName</a>
+                        vào lúc @Model.DateCreated
+                        <br />
+                        @foreach (var i in Model.Tags)
+                        {
+                            <a href="/Article/Tags/@i.Id" class="btn btn-default btn-tags btn-xs">@i.Tag</a>
+                        }
+                    </small>
+                </div>
+                <p>@(Html.Raw(Model.ArticleContent))</p>
+                <h3>Bình luận</h3>
+                @foreach (var item in Model.Comments)
+                {
+                    <div class="media">
+                        <div class="media-left hidden-xs">
+                            <a href="javascript:(void)">
+                                <img class="media-object" src="@item.User.Image" alt="@item.User.Image" style="max-width:50px">
+                            </a>
+                        </div>
+                        <div class="media-body">
+                            <h4 class="media-heading"><a href="javascript:(void)">@item.User.FullName</a></h4>
+                            <small>
+                                Đã bình luận vào lúc @item.DateCreated
+                            </small>
+                            <p>@(Html.Raw(item.Comment))</p>
+                        </div>
+                    </div>
+                }
+                @using (Html.BeginForm("CreateComment", "Article", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.ValidationSummary()
+                    @Html.Hidden("ArticleId", Model.Id)
+                    <fieldset class="form-group">
+                        <label for="Comment" class="control-label">Viết bình luận:</label>
+                        <textarea id="Comment" name="Comment" class="form-control"></textarea>
+                        <input type="submit" class="btn btn-primary" value="Gửi bình luận" />
+                    </fieldset>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        @{ Html.RenderAction("_MenuPartail", "Home", null);}
+    </div>
+</div>

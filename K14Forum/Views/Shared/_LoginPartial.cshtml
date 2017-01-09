@@ -1,22 +1,25 @@
-﻿@using Microsoft.AspNet.Identity
+﻿@using K14Forum.CodeHelper;
+@using Microsoft.AspNet.Identity
 @if (Request.IsAuthenticated)
 {
-    using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
-    {
-    @Html.AntiForgeryToken()
-
     <ul class="nav navbar-nav navbar-right">
-        <li>
-            @Html.ActionLink("Hello " + User.Identity.GetUserName() + "!", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" })
+        <li class="dropdown @(CurrentAction.currentAction.Contains("Manage")==true ? "active" : "")">
+            <a href="javascript:(void)" class="dropdown-toggle" data-toggle="dropdown">@User.Identity.GetUserName() <b class="caret"></b></a>
+            <ul class="dropdown-menu">
+                <li class="@(CurrentAction.currentAction == "Manage-Article" ? "active" : "")"><a href="/Manage/Articles">Bài viết của tôi</a></li>
+                <li class="@(CurrentAction.currentAction == "Manage-Article-Create" ? "active" : "")"><a href="/Article/Create">Tạo bài viết</a></li>
+                <li class="divider"></li>
+                
+                <li class="@(CurrentAction.currentAction == "Manage" ? "active" : "")">@Html.ActionLink("Quản lý tài khoản", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" })</li>
+                <li><a href="/Account/LogOff">Đăng xuất</a></li>
+            </ul>
         </li>
-        <li><a href="javascript:document.getElementById('logoutForm').submit()">Log off</a></li>
     </ul>
-    }
 }
 else
 {
-    <ul class="nav navbar-nav navbar-right">
-        <li>@Html.ActionLink("Register", "Register", "Account", routeValues: null, htmlAttributes: new { id = "registerLink" })</li>
-        <li>@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
+    <ul class="nav navbar-form navbar-right">
+        @Html.ActionLink("Đăng nhập", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink", @class = "btn btn-default" })
+        @Html.ActionLink("Đăng ký", "Register", "Account", routeValues: null, htmlAttributes: new { id = "registerLink", @class = "btn btn-primary" })
     </ul>
 }

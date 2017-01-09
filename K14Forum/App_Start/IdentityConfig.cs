@@ -11,6 +11,8 @@ using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using K14Forum.Models;
+using System.Net.Mail;
+using System.Net;
 
 namespace K14Forum
 {
@@ -18,6 +20,25 @@ namespace K14Forum
     {
         public Task SendAsync(IdentityMessage message)
         {
+            var client = new SmtpClient
+            {
+                Host = "smtp.gmail.com",
+                Port = 587,
+                UseDefaultCredentials = false,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                Credentials = new NetworkCredential("chuongnhh@gmail.com", "14110013"),
+                EnableSsl = true
+            };
+            var from = new MailAddress("chuongnhh@gmail.com", "Nguyen Hoang Chuong");
+            var to = new MailAddress(message.Destination);
+
+            var mail = new MailMessage(from, to)
+            {
+                Subject = message.Subject,
+                Body = message.Body,
+                IsBodyHtml = true
+            };
+            client.Send(mail);
             // Plug in your email service here to send an email.
             return Task.FromResult(0);
         }

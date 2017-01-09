@@ -1,31 +1,42 @@
-﻿@{
-    ViewBag.Title = "Home Page";
+﻿@model PagedList.IPagedList<K14Forum.Models.ApplicationArticle>
+@using PagedList.Mvc;
+@{
+    ViewBag.Title = "Trang chủ";
 }
 
-<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS and JavaScript.</p>
-    <p><a href="https://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-</div>
-
 <div class="row">
-    <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>
-            ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites that
-            enables a clean separation of concerns and gives you full control over markup
-            for enjoyable, agile development.
-        </p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301865">Learn more &raquo;</a></p>
+    <div class="col-md-8">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <strong>Bài viết mới nhất</strong>
+            </div>
+            <div class="panel-body">
+                @foreach (var item in Model)
+                {
+                    <div class="media">
+                        <div class="media-body">
+                            <h3 class="media-heading"><a href="/Article/Details/@item.Id">@item.Title</a></h3>
+                            <small>
+                                Được tạo bởi <a href="javascript:(void)">@item.User.FullName</a>
+                                vào lúc @item.DateCreated
+                                <br />
+                                @foreach (var i in item.Tags)
+                                {
+                                    <a href="/Article/Tags/@i.Id" class="btn btn-default btn-tags btn-xs">@i.Tag</a>
+                                }
+                            </small>
+                            <p>@item.Description</p>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="text-center">
+                <hr style="margin:0px;padding-bottom:5px;" />
+                @Html.PagedListPager(Model, page => Url.Action("Index", new { page }))
+            </div>
+        </div>
     </div>
     <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301866">Learn more &raquo;</a></p>
-    </div>
-    <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="https://go.microsoft.com/fwlink/?LinkId=301867">Learn more &raquo;</a></p>
+        @{ Html.RenderAction("_MenuPartail", "Home", null);}
     </div>
 </div>
